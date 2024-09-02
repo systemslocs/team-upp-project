@@ -1,5 +1,18 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Button } from 'react-native';
+import { 
+  View, 
+  Text, 
+  TextInput, 
+  TouchableOpacity, 
+  StyleSheet, 
+  Image, 
+  Button, 
+  Alert, 
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView
+} from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function LoginScreen({ navigation }) {
   // Estados para os campos de usuário e senha
@@ -7,17 +20,37 @@ export default function LoginScreen({ navigation }) {
   const [password, setPassword] = useState('');
 
   // Função que será chamada ao pressionar o botão de login
-  const handleLogin = () => {
-    // Aqui você pode adicionar lógica de autenticação
-    // Se o login for bem-sucedido, redirecione para a próxima página:
-    navigation.navigate('Home');
+  const handleLogin = async () => {
+    try {
+      const storedUser = await AsyncStorage.getItem('user');
+      if (storedUser) {
+        const userData = JSON.parse(storedUser);
+        if (username === userData.username && password === userData.password) {
+          // Credenciais corretas
+          Alert.alert('Sucesso', 'Login bem-sucedido!');
+          navigation.navigate('Home'); // Navegue para a página inicial ou outra página desejada
+        } else {
+          // Credenciais incorretas
+          Alert.alert('Erro', 'Nome de usuário ou senha incorretos');
+        }
+      } else {
+        Alert.alert('Erro', 'Nenhum usuário encontrado. Faça o cadastro primeiro.');
+      }
+    } catch (error) {
+      Alert.alert('Erro', 'Falha ao autenticar. Tente novamente.');
+    }
   };
   const handleNavigateToCreateAccount = () => {
     navigation.navigate('CreateAccount');
   };
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : StatusBar.currentHeight}
+    >
+    <ScrollView contentContainerStyle={styles.scrollViewContainer}>
       <Image
         source={require('./assets/logo-app.png')} // Substitua pelo caminho da sua imagem
         style={styles.logo}
@@ -42,16 +75,20 @@ export default function LoginScreen({ navigation }) {
         <Text style={styles.loginButtonText}>Login</Text>
       </TouchableOpacity>
       <Button title="Ainda não tem conta?" onPress={handleNavigateToCreateAccount} />
-    </View>
+    </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#fff',
+  },
+  scrollViewContainer: {
+    flexGrow: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#fff',
     padding: 16,
   },
   logo: {

@@ -1,5 +1,18 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Image, StyleSheet, TouchableOpacity,Platform, StatusBar } from 'react-native';
+import { 
+    View, 
+    Text, 
+    TextInput, 
+    Image, 
+    StyleSheet, 
+    TouchableOpacity, 
+    Platform, 
+    StatusBar, 
+    Alert, 
+    KeyboardAvoidingView, 
+    ScrollView
+} from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function CreateAccountScreen({ navigation }) {
   const [firstName, setFirstName] = useState('');
@@ -10,17 +23,42 @@ export default function CreateAccountScreen({ navigation }) {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
-  const handleCreateAccount = () => {
-    // Lógica para criar conta
-    navigation.navigate('Home');
-  };
-
+  const handleCreateAccount = async () => {
+    if (password !== confirmPassword) {
+        Alert.alert('Erro', 'As senhas não coincidem');
+        return;
+      }
+  
+      const userData = {
+        firstName,
+        lastName,
+        email,
+        birthDate,
+        username,
+        password,
+      };
+  
+      try {
+        // Armazenando os dados do usuário no AsyncStorage
+        await AsyncStorage.setItem('user', JSON.stringify(userData));
+        Alert.alert('Sucesso', 'Conta criada com sucesso!');
+        navigation.navigate('Login');
+      } catch (error) {
+        Alert.alert('Erro', 'Falha ao criar conta');
+      }
+    };
+  
   const handleGoBack = () => {
     navigation.goBack('Login'); // Volta para a tela anterior (LoginScreen)
   };
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : StatusBar.currentHeight}
+    >
+    <ScrollView contentContainerStyle={styles.scrollViewContainer}>
       <TouchableOpacity style={styles.backButton} onPress={handleGoBack}>
         <Text style={styles.backButtonText}>Voltar</Text>
       </TouchableOpacity>
@@ -81,40 +119,43 @@ export default function CreateAccountScreen({ navigation }) {
       <TouchableOpacity style={styles.createAccountButton} onPress={handleCreateAccount}>
         <Text style={styles.createAccountButtonText}>Criar conta</Text>
       </TouchableOpacity>
-    </View>
+    </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+container: {
     flex: 1,
+    backgroundColor: '#fff',
+},
+scrollViewContainer: {
+    flexGrow: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#fff',
     padding: 16,
-    position: 'relative', // Necessário para posicionamento absoluto do botão de voltar
-  },
-  backButton: {
+},
+backButton: {
     position: 'absolute',
     top: Platform.OS === 'android' ? StatusBar.currentHeight + 10 : 40, // Ajuste para Android e iOS
     left: 10,
     padding: 10,
-  },
-  logoCreate: {
+},
+logoCreate: {
     width: 200,
     height: 200,
     marginBottom: 20,
-  },
-  backButtonText: {
+},
+backButtonText: {
     color: '#007BFF',
     fontSize: 16,
-  },
-  text: {
+},
+text: {
     fontSize: 24,
     marginBottom: 20,
     fontWeight: 'bold',
-  },
-  input: {
+},
+input: {
     width: '80%',
     height: 40,
     borderColor: '#ccc',
@@ -122,18 +163,18 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     marginBottom: 20,
     paddingHorizontal: 10,
-  },
-  createAccountButton: {
+},
+createAccountButton: {
     width: '50%',
     height: 50,
     backgroundColor: '#084b0f',
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 25,
-  },
-  createAccountButtonText: {
+},
+createAccountButtonText: {
     color: '#fff',
     fontSize: 18,
     fontWeight: 'bold',
-  },
+},
 });
