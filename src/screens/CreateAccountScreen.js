@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
 import { 
-    View, 
     Text, 
     TextInput, 
-    Image, 
     StyleSheet, 
     TouchableOpacity, 
     Platform, 
@@ -12,7 +10,11 @@ import {
     KeyboardAvoidingView, 
     ScrollView
 } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import CustomButton from '../components/CustomButton';
+import Logo from '../components/Logo';
+import { GlobalStyles } from '../styles/GlobalStyles';
+import { validatePassword } from '../utils/validation';
+import { storeUserData } from '../utils/storage';
 
 export default function CreateAccountScreen({ navigation }) {
   const [firstName, setFirstName] = useState('');
@@ -24,8 +26,9 @@ export default function CreateAccountScreen({ navigation }) {
   const [confirmPassword, setConfirmPassword] = useState('');
 
   const handleCreateAccount = async () => {
-    if (password !== confirmPassword) {
-        Alert.alert('Erro', 'As senhas não coincidem');
+    const error = validatePassword(password, confirmPassword);
+      if (error) {
+        Alert.alert('Erro', error);
         return;
       }
   
@@ -39,8 +42,7 @@ export default function CreateAccountScreen({ navigation }) {
       };
   
       try {
-        // Armazenando os dados do usuário no AsyncStorage
-        await AsyncStorage.setItem('user', JSON.stringify(userData));
+        await storeUserData(userData);
         Alert.alert('Sucesso', 'Conta criada com sucesso!');
         navigation.navigate('Login');
       } catch (error) {
@@ -54,127 +56,83 @@ export default function CreateAccountScreen({ navigation }) {
 
   return (
     <KeyboardAvoidingView
-      style={styles.container}
+      style={GlobalStyles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : StatusBar.currentHeight}
     >
-    <ScrollView contentContainerStyle={styles.scrollViewContainer}>
+    <ScrollView contentContainerStyle={GlobalStyles.scrollViewContainer}>
       <TouchableOpacity style={styles.backButton} onPress={handleGoBack}>
         <Text style={styles.backButtonText}>Voltar</Text>
       </TouchableOpacity>
 
-      <Image
-        source={require('./assets/logo-app.png')} 
-        style={styles.logoCreate}
-      />
+      <Logo/>
 
-      <Text style={styles.text}>Criar Conta</Text>
+      <Text style={GlobalStyles.text}>Criar Conta</Text>
 
       <TextInput
-        style={styles.input}
+        style={GlobalStyles.input}
         placeholder="Nome"
         value={firstName}
         onChangeText={setFirstName}
       />
       <TextInput
-        style={styles.input}
+        style={GlobalStyles.input}
         placeholder="Sobrenome"
         value={lastName}
         onChangeText={setLastName}
       />
       <TextInput
-        style={styles.input}
+        style={GlobalStyles.input}
         placeholder="Email"
         value={email}
         onChangeText={setEmail}
         keyboardType="email-address"
       />
       <TextInput
-        style={styles.input}
+        style={GlobalStyles.input}
         placeholder="Data de Nascimento"
         value={birthDate}
         onChangeText={setBirthDate}
       />
       <TextInput
-        style={styles.input}
+        style={GlobalStyles.input}
         placeholder="Usuário"
         value={username}
         onChangeText={setUsername}
       />
       <TextInput
-        style={styles.input}
+        style={GlobalStyles.input}
         placeholder="Senha"
         value={password}
         onChangeText={setPassword}
         secureTextEntry={true}
       />
       <TextInput
-        style={styles.input}
+        style={GlobalStyles.input}
         placeholder="Confirmar Senha"
         value={confirmPassword}
         onChangeText={setConfirmPassword}
         secureTextEntry={true}
       />
 
-      <TouchableOpacity style={styles.createAccountButton} onPress={handleCreateAccount}>
-        <Text style={styles.createAccountButtonText}>Criar conta</Text>
-      </TouchableOpacity>
+      <CustomButton
+        title="Criar conta"
+        onPress={handleCreateAccount}
+      />
     </ScrollView>
     </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-container: {
-    flex: 1,
-    backgroundColor: '#fff',
-},
-scrollViewContainer: {
-    flexGrow: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 16,
-},
 backButton: {
     position: 'absolute',
     top: Platform.OS === 'android' ? StatusBar.currentHeight + 10 : 40, // Ajuste para Android e iOS
     left: 10,
     padding: 10,
 },
-logoCreate: {
-    width: 200,
-    height: 200,
-    marginBottom: 20,
-},
 backButtonText: {
     color: '#007BFF',
     fontSize: 16,
-},
-text: {
-    fontSize: 24,
-    marginBottom: 20,
-    fontWeight: 'bold',
-},
-input: {
-    width: '80%',
-    height: 40,
-    borderColor: '#ccc',
-    borderWidth: 1,
-    borderRadius: 5,
-    marginBottom: 20,
-    paddingHorizontal: 10,
-},
-createAccountButton: {
-    width: '50%',
-    height: 50,
-    backgroundColor: '#084b0f',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 25,
-},
-createAccountButtonText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
 },
 });

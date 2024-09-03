@@ -16,7 +16,7 @@ export default function SplashScreen({ navigation }) {
     <View style={styles.container}>
       <StatusBar hidden={true} />
       <Image
-        source={require('./assets/logo-inicial.png')} // Caminho para a sua imagem
+        source={require('../../assets/logo-inicial.png')} // Caminho para a sua imagem
         style={styles.image}
         resizeMode="contain"
       />
