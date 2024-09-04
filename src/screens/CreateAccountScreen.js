@@ -16,6 +16,21 @@ import { GlobalStyles } from '../styles/GlobalStyles';
 import { validatePassword } from '../utils/validation';
 import { storeUserData } from '../utils/storage';
 
+const formatDate = (date) => {
+  const cleaned = ('' + date).replace(/\D/g, '');
+  const day = cleaned.substring(0, 2);
+  const month = cleaned.substring(2, 4);
+  const year = cleaned.substring(4, 8);
+
+  if (year.length > 0) {
+    return `${day}/${month}/${year}`;
+  }
+  if (month.length > 0) {
+    return `${day}/${month}`;
+  }
+  return day;
+};
+
 export default function CreateAccountScreen({ navigation }) {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -91,8 +106,9 @@ export default function CreateAccountScreen({ navigation }) {
       <TextInput
         style={GlobalStyles.input}
         placeholder="Data de Nascimento"
-        value={birthDate}
-        onChangeText={setBirthDate}
+        value={formatDate(birthDate)}
+        onChangeText={text => setBirthDate(text)}
+        keyboardType="numeric"
       />
       <TextInput
         style={GlobalStyles.input}
