@@ -5,6 +5,7 @@ import SplashScreen from './src/screens/SplashScreen'; // Tela inicial
 import LoginScreen from './src/screens/LoginScreen';   // Tela de login
 import HomeScreen from './src/screens/HomeScreen'; // Tela Home
 import CreateAccountScreen from './src/screens/CreateAccountScreen';
+import ProfileScreen from './src/screens/ProfileScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -16,6 +17,7 @@ export default function App() {
         <Stack.Screen name="Login" component={LoginScreen} />
         <Stack.Screen name="Home" component={HomeScreen} />
         <Stack.Screen name="CreateAccount" component={CreateAccountScreen} />
+        <Stack.Screen name="Profile" component={ProfileScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
