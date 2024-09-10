@@ -30,28 +30,32 @@ const SideMenu = ({ navigation }) => {
       toggleMenu();
     }
   };
+  const navigateAndCloseMenu = (route) => {
+    toggleMenu(); // Fecha o menu
+    navigation.navigate(route); // Navega para a página selecionada
+  };
 
   return (
     <>
-      <TouchableOpacity onPress={toggleMenu} style={styles.profileButton}>
-        <Ionicons name="person-circle-outline" size={50} color="#084b0f" />
+      <TouchableOpacity onPress={toggleMenu} style={styles.menuButton}>
+        <Ionicons name="menu-outline" size={50} color="#084b0f" />
       </TouchableOpacity>
       {menuVisible && (
         <TouchableOpacity style={styles.overlay} onPress={handleOutsideClick} activeOpacity={1}>
           <Animated.View style={[styles.menuContainer, { transform: [{ translateX: animation }] }]}>
-            <TouchableOpacity onPress={() => navigation.navigate('Profile')} style={styles.menuItemContainer}>
+            <TouchableOpacity onPress={() => navigateAndCloseMenu('Profile')} style={styles.menuItemContainer}>
               <Ionicons name="person-outline" size={24} color="#084b0f" style={styles.menuIcon} />
               <Text style={styles.menuItem}>Perfil</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => navigation.navigate('Players')} style={styles.menuItemContainer}>
+            <TouchableOpacity onPress={() => navigateAndCloseMenu('Players')} style={styles.menuItemContainer}>
               <Ionicons name="people-outline" size={24} color="#084b0f" style={styles.menuIcon} />
               <Text style={styles.menuItem}>Jogadores</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => navigation.navigate('Teams')} style={styles.menuItemContainer}>
+            <TouchableOpacity onPress={() => navigateAndCloseMenu('Teams')} style={styles.menuItemContainer}>
               <Ionicons name="shield-outline" size={24} color="#084b0f" style={styles.menuIcon} />
               <Text style={styles.menuItem}>Times</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => navigation.navigate('Settings')} style={styles.menuItemContainer}>
+            <TouchableOpacity onPress={() => navigateAndCloseMenu('Settings')} style={styles.menuItemContainer}>
               <Ionicons name="settings-outline" size={24} color="#084b0f" style={styles.menuIcon} />
               <Text style={styles.menuItem}>Configurações</Text>
             </TouchableOpacity>
@@ -63,7 +67,7 @@ const SideMenu = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  profileButton: {
+  menuButton: {
     position: 'absolute',
     top: 40, 
     left: 10,

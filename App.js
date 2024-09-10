@@ -6,6 +6,8 @@ import LoginScreen from './src/screens/LoginScreen';   // Tela de login
 import HomeScreen from './src/screens/HomeScreen'; // Tela Home
 import CreateAccountScreen from './src/screens/CreateAccountScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
+import PlayerScreen from './src/screens/PlayerScreen';
+import TeamsScreen from './src/screens/TeamsScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -18,6 +20,8 @@ export default function App() {
         <Stack.Screen name="Home" component={HomeScreen} />
         <Stack.Screen name="CreateAccount" component={CreateAccountScreen} />
         <Stack.Screen name="Profile" component={ProfileScreen} />
+        <Stack.Screen name="Players" component={PlayerScreen} />
+        <Stack.Screen name="Teams" component={TeamsScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

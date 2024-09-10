@@ -4,7 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import SideMenu from '../components/SideMenu';
 import { GlobalStyles } from '../styles/GlobalStyles';
 
-const ProfileScreen = () => {
+const ProfileScreen = ({ navigation }) => {
   const [userData, setUserData] = useState({
     firstName: '',
     lastName: '',
@@ -25,7 +25,7 @@ const ProfileScreen = () => {
 
   return (
     <View style={GlobalStyles.container}>
-      <SideMenu />
+      <SideMenu navigation={navigation} />
       <View style={styles.profileContainer}>
         <Image
           source={require('../../assets/user-icon.png')} // Certifique-se de ter um ícone de usuário
