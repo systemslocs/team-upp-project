@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Image, Alert, ScrollView, Platform, StatusBar } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Alert, FlatList, Platform, StatusBar, Image } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import SideMenu from '../components/SideMenu';
 import { GlobalStyles } from '../styles/GlobalStyles';
@@ -10,123 +10,62 @@ const TeamsScreen = ({ navigation }) => {
   const [teams, setTeams] = useState([]);
 
   useEffect(() => {
-    const fetchPlayers = async () => {
+    const loadPlayers = async () => {
       try {
         const storedPlayers = await AsyncStorage.getItem('players');
-        if (storedPlayers) {
-          const parsedPlayers = JSON.parse(storedPlayers);
-          setPlayers(parsedPlayers);
-        } else {
-          console.log('Nenhum jogador adicionado');
-        }
+        const parsedPlayers = storedPlayers ? JSON.parse(storedPlayers) : [];
+        setPlayers(parsedPlayers);
       } catch (error) {
-        console.log('Erro ao carregar os jogadores:', error);
+        Alert.alert('Erro', 'Não foi possível carregar os jogadores.');
       }
     };
-    fetchPlayers();
+
+    loadPlayers();
   }, []);
 
-  const toggleSelection = (player) => {
+  // Alternar seleção de jogadores
+  const togglePlayerSelection = (player) => {
     if (selectedPlayers.includes(player)) {
-      setSelectedPlayers(selectedPlayers.filter(p => p !== player));
+      setSelectedPlayers(selectedPlayers.filter((p) => p !== player));
     } else {
       setSelectedPlayers([...selectedPlayers, player]);
     }
   };
 
-  const sortTeams = () => {
-    if (selectedPlayers.length < 10) {
-      Alert.alert('Adicione mais jogadores');
+  // Função de sorteio
+  const handleSortTeams = () => {
+    const numberOfSelectedPlayers = selectedPlayers.length;
+
+    if (numberOfSelectedPlayers < 10) {
+      Alert.alert('Erro', 'Selecione pelo menos 10 jogadores.');
       return;
     }
 
-    if (selectedPlayers.length % 5 !== 0) {
-      Alert.alert('Adicione ou remova jogadores para que o número seja divisível por 5');
+    if (numberOfSelectedPlayers % 5 !== 0) {
+      Alert.alert('Erro', 'O número de jogadores deve ser múltiplo de 5.');
       return;
     }
 
-    // Função para criar times balanceados
-    const createBalancedTeams = () => {
-      const numberOfTeams = selectedPlayers.length / 5;
-      let teams = Array.from({ length: numberOfTeams }, () => []);
+    const sortedTeams = sortTeams(selectedPlayers);
+    setTeams(sortedTeams);
+  };
 
-      // Ordena os jogadores por nota (do maior para o menor)
-      const sortedPlayers = [...selectedPlayers].sort((a, b) => b.score - a.score);
+  // Lógica para balancear e sortear os times
+  const sortTeams = (playersToSort) => {
+    // Ordena os jogadores por nota (decrescente)
+    const sortedPlayers = [...playersToSort].sort((a, b) => b.score - a.score);
 
-      // Distribui os jogadores nos times de forma inicial
-      let index = 0;
-      while (sortedPlayers.length > 0) {
-        teams[index % numberOfTeams].push(sortedPlayers.shift());
-        index++;
-      }
+    const numberOfTeams = Math.floor(sortedPlayers.length / 5);
+    const teams = Array.from({ length: numberOfTeams }, () => []);
 
-      // Função para calcular a média de um time
-      const calculateTeamAverage = (team) => {
-        const total = team.reduce((sum, player) => sum + parseFloat(player.score), 0);
-        return total / team.length;
-      };
+    // Distribui os jogadores de forma alternada entre os times
+    let teamIndex = 0;
+    sortedPlayers.forEach((player) => {
+      teams[teamIndex].push(player);
+      teamIndex = (teamIndex + 1) % numberOfTeams; // Alterna entre os times
+    });
 
-      // Função para calcular a diferença entre a maior e a menor média
-      const calculateAverageDifference = (teams) => {
-        const teamAverages = teams.map(calculateTeamAverage);
-        const maxAverage = Math.max(...teamAverages);
-        const minAverage = Math.min(...teamAverages);
-        return maxAverage - minAverage;
-      };
-
-      let difference = calculateAverageDifference(teams);
-
-      // Ajusta os times até que a diferença de médias seja próxima de 0.3 ou menor
-      while (difference > 0.3) {
-        let maxTeamIndex = -1;
-        let minTeamIndex = -1;
-        let maxAverage = -Infinity;
-        let minAverage = Infinity;
-
-        // Encontra os times com a maior e a menor média
-        teams.forEach((team, idx) => {
-          const avg = calculateTeamAverage(team);
-          if (avg > maxAverage) {
-            maxAverage = avg;
-            maxTeamIndex = idx;
-          }
-          if (avg < minAverage) {
-            minAverage = avg;
-            minTeamIndex = idx;
-          }
-        });
-
-        // Tenta trocar o jogador com a maior nota do time com a maior média
-        // com o jogador com a menor nota do time com a menor média
-        const maxTeam = teams[maxTeamIndex];
-        const minTeam = teams[minTeamIndex];
-
-        const playerFromMaxTeam = maxTeam.reduce((maxPlayer, player) => {
-          return !maxPlayer || player.score > maxPlayer.score ? player : maxPlayer;
-        }, null);
-
-        const playerFromMinTeam = minTeam.reduce((minPlayer, player) => {
-          return !minPlayer || player.score < minPlayer.score ? player : minPlayer;
-        }, null);
-
-        // Realiza a troca se for possível
-        if (playerFromMaxTeam && playerFromMinTeam) {
-          teams[maxTeamIndex] = maxTeam.filter(player => player !== playerFromMaxTeam);
-          teams[minTeamIndex] = minTeam.filter(player => player !== playerFromMinTeam);
-
-          teams[maxTeamIndex].push(playerFromMinTeam);
-          teams[minTeamIndex].push(playerFromMaxTeam);
-        }
-
-        // Recalcula a diferença
-        difference = calculateAverageDifference(teams);
-      }
-
-      return teams;
-    };
-
-    const teams = createBalancedTeams();
-    setTeams(teams);
+    return teams;
   };
 
   return (
@@ -135,44 +74,57 @@ const TeamsScreen = ({ navigation }) => {
       <View style={styles.content}>
         <Image source={require('../../assets/team-icon.png')} style={styles.image} />
         <Text style={styles.title}>Selecione os jogadores</Text>
-        <ScrollView>
-          {players.length > 0 ? (
-            players.map((player, index) => (
+
+        {players.length === 0 ? (
+          <Text style={styles.noPlayersText}>Nenhum jogador adicionado</Text>
+        ) : (
+          <FlatList
+            data={players}
+            keyExtractor={(item, index) => index.toString()}
+            renderItem={({ item }) => (
               <TouchableOpacity
-                key={index}
-                onPress={() => toggleSelection(player)}
                 style={[
-                  styles.playerContainer,
-                  selectedPlayers.includes(player) && styles.selectedPlayer,
+                  styles.playerItem,
+                  selectedPlayers.includes(item) && styles.selectedPlayer,
                 ]}
+                onPress={() => togglePlayerSelection(item)}
               >
-                <Text style={styles.playerText}>{player.name} - Nota: {player.score}</Text>
+                <Text>{item.name} - Nota: {typeof item.score === 'number' ? item.score.toFixed(2) : 'Sem nota'}</Text>
               </TouchableOpacity>
-            ))
-          ) : (
-            <Text style={styles.noPlayersText}>Nenhum jogador adicionado</Text>
-          )}
-        </ScrollView>
-        <TouchableOpacity style={styles.button} onPress={sortTeams}>
+            )}
+          />
+        )}
+
+        <TouchableOpacity
+          style={[styles.button, selectedPlayers.length < 10 && styles.buttonDisabled]}
+          onPress={handleSortTeams}
+          disabled={selectedPlayers.length < 10 || selectedPlayers.length % 5 !== 0}
+        >
           <Text style={styles.buttonText}>Sortear Times</Text>
         </TouchableOpacity>
 
         {/* Exibe os times sorteados */}
         {teams.length > 0 && (
-          <ScrollView style={styles.teamsContainer}>
+          <View style={styles.teamsContainer}>
             {teams.map((team, index) => (
               <View key={index} style={styles.team}>
-                <Text style={styles.teamTitle}>Time {index + 1}</Text>
+                <Text style={styles.teamTitle}>Time {index + 1} - Média: {calculateTeamAverage(team).toFixed(2)}</Text>
                 {team.map((player, idx) => (
-                  <Text key={idx} style={styles.playerText}>{player.name}</Text>
+                  <Text key={idx} style={styles.playerText}>{player.name} - Nota: {player.score.toFixed(2)}</Text>
                 ))}
               </View>
             ))}
-          </ScrollView>
+          </View>
         )}
       </View>
     </View>
   );
+};
+
+// Função auxiliar para calcular a média de cada time
+const calculateTeamAverage = (team) => {
+  const totalScore = team.reduce((sum, player) => sum + player.score, 0);
+  return totalScore / team.length;
 };
 
 const styles = StyleSheet.create({
@@ -197,7 +149,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     color: '#084b0f',
   },
-  playerContainer: {
+  playerItem: {
     padding: 15,
     borderBottomWidth: 1,
     borderColor: '#ccc',
@@ -214,6 +166,9 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: 'center',
     marginTop: 20,
+  },
+  buttonDisabled: {
+    backgroundColor: '#ccc',
   },
   buttonText: {
     color: '#fff',
@@ -233,8 +188,8 @@ const styles = StyleSheet.create({
   noPlayersText: {
     textAlign: 'center',
     fontSize: 18,
-    color: '#999',
-    marginTop: 20,
+    color: 'gray',
+    marginVertical: 20,
   },
 });
 
