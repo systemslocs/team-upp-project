@@ -43,6 +43,10 @@ const SideMenu = ({ navigation }) => {
       {menuVisible && (
         <TouchableOpacity style={styles.overlay} onPress={handleOutsideClick} activeOpacity={1}>
           <Animated.View style={[styles.menuContainer, { transform: [{ translateX: animation }] }]}>
+          <TouchableOpacity onPress={() => navigateAndCloseMenu('Home')} style={styles.menuItemContainer}>
+              <Ionicons name="home-outline" size={24} color="#084b0f" style={styles.menuIcon} />
+              <Text style={styles.menuItem}>Home</Text>
+            </TouchableOpacity>
             <TouchableOpacity onPress={() => navigateAndCloseMenu('Profile')} style={styles.menuItemContainer}>
               <Ionicons name="person-outline" size={24} color="#084b0f" style={styles.menuIcon} />
               <Text style={styles.menuItem}>Perfil</Text>
@@ -55,9 +59,13 @@ const SideMenu = ({ navigation }) => {
               <Ionicons name="shield-outline" size={24} color="#084b0f" style={styles.menuIcon} />
               <Text style={styles.menuItem}>Times</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => navigateAndCloseMenu('Settings')} style={styles.menuItemContainer}>
-              <Ionicons name="settings-outline" size={24} color="#084b0f" style={styles.menuIcon} />
-              <Text style={styles.menuItem}>Configurações</Text>
+            <TouchableOpacity onPress={() => navigateAndCloseMenu('Matches')} style={styles.menuItemContainer}>
+              <Ionicons name="football-outline" size={24} color="#084b0f" style={styles.menuIcon} />
+              <Text style={styles.menuItem}>Partidas</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => navigateAndCloseMenu('Exit')} style={styles.menuItemContainer}>
+              <Ionicons name="exit-outline" size={24} color="#084b0f" style={styles.menuIcon} />
+              <Text style={styles.menuItem}>Sair</Text>
             </TouchableOpacity>
           </Animated.View>
         </TouchableOpacity>
@@ -87,7 +95,7 @@ const styles = StyleSheet.create({
     top: 0,
     bottom: 0,
     width: '50%',
-    backgroundColor: '#9dbfa1',
+    backgroundColor: '#c4ac57', //'#9dbfa1',
     zIndex: 6,
     paddingTop: 100, 
     paddingLeft: 20,

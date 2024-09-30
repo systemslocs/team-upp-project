@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image, Platform, StatusBar } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image, ScrollView, Platform, StatusBar } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage'; // Importando AsyncStorage
 import { GlobalStyles } from '../styles/GlobalStyles';
-import CustomButton from '../components/CustomButton';
 import SideMenu from '../components/SideMenu';
+import CustomButton from '../components/CustomButton';
 
 const TeamsScreen = ({ navigation }) => {
   const [players, setPlayers] = useState([]);
   const [selectedPlayers, setSelectedPlayers] = useState([]);
   const [teams, setTeams] = useState([]);
   const [teamDifference, setTeamDifference] = useState(null);
+  const [isSorted, setIsSorted] = useState(false); // Nova variável para controlar o status do sorteio
 
   // Função para buscar jogadores armazenados
   useEffect(() => {
@@ -87,7 +88,7 @@ const TeamsScreen = ({ navigation }) => {
   // Função para sortear os times com a menor diferença de médias
   const handleSortTeams = () => {
     if (selectedPlayers.length < 10 || selectedPlayers.length % 5 !== 0) {
-      alert('Selecione pelo menos 10 jogadores e certifique-se de que o número seja múltiplo de 5');
+      alert('Selecione pelo menos 10 jogadores e a quantidade necessária para formar times de 5.');
       return;
     }
 
@@ -97,11 +98,21 @@ const TeamsScreen = ({ navigation }) => {
     // Atualiza o estado dos times e da diferença
     setTeams(generatedTeams);
     setTeamDifference(difference);
+    setIsSorted(true); // Marca o sorteio como concluído
+  };
+
+  // Função para resetar a página para o estado inicial
+  const handleNewSort = () => {
+    setSelectedPlayers([]);  // Reseta a seleção de jogadores
+    setTeams([]);            // Reseta os times
+    setTeamDifference(null);  // Reseta a diferença das médias
+    setIsSorted(false);       // Volta ao estado inicial
   };
 
   return (
     <View style={GlobalStyles.container}>
       <SideMenu navigation={navigation} />
+      <ScrollView style={styles.scrollContainer}>
       <View style={styles.content}>
         <Image source={require('../../assets/team-icon.png')} style={styles.image} />
         <Text style={styles.title}>Selecione os jogadores</Text>
@@ -123,15 +134,16 @@ const TeamsScreen = ({ navigation }) => {
                 <Text>{item.name} - Nota: {parseFloat(item.score).toFixed(2)}</Text>
               </TouchableOpacity>
             )}
+            scrollEnabled={false} // Desabilita o scroll do FlatList para evitar conflito com o ScrollView
           />
         )}
-
-        <CustomButton
-          title="Sortear Times"
-          onPress={handleSortTeams}
-          disabled={selectedPlayers.length < 10 || selectedPlayers.length % 5 !== 0}
-        />
-
+        <View style={styles.buttonContainer}>
+          <CustomButton
+            title={isSorted ? "Novo Sorteio" : "Sortear Times"} // Muda o título do botão
+            onPress={isSorted ? handleNewSort : handleSortTeams} // Alterna entre o sorteio e o reset
+            disabled={!isSorted && (selectedPlayers.length < 10 || selectedPlayers.length % 5 !== 0)} // Desabilita o botão se não houver sorteio e seleção inválida
+          />
+        </View>
         {teams.length > 0 && (
           <View style={styles.teamsContainer}>
             {teams.map((team, index) => (
@@ -148,6 +160,7 @@ const TeamsScreen = ({ navigation }) => {
           </View>
         )}
       </View>
+      </ScrollView>
     </View>
   );
 };
@@ -157,6 +170,10 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
     marginTop: 60,
+  },
+  scrollContainer: {
+    flexGrow: 1,
+    top: Platform.OS === 'android' ? StatusBar.currentHeight + 10 : 40,
   },
   image: {
     width: 100,
@@ -207,6 +224,10 @@ const styles = StyleSheet.create({
     color: '#084b0f',
     marginTop: 20,
     textAlign: 'center',
+  },
+  buttonContainer: {
+    alignItems: 'center', 
+    marginVertical: 20,
   },
 });
 

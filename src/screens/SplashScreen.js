@@ -29,7 +29,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#fff', // Cor de fundo da tela inicial
+    backgroundColor: '#084b0f', // Cor de fundo da tela inicial
   },
   image: {
     width: '80%', // Largura da imagem (ajuste conforme necessário)
