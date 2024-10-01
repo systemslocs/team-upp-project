@@ -8,6 +8,7 @@ import CreateAccountScreen from './src/screens/CreateAccountScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
 import PlayerScreen from './src/screens/PlayerScreen';
 import TeamsScreen from './src/screens/TeamsScreen';
+import MatchesScreen from './src/screens/MatchesScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -22,6 +23,7 @@ export default function App() {
         <Stack.Screen name="Profile" component={ProfileScreen} />
         <Stack.Screen name="Players" component={PlayerScreen} />
         <Stack.Screen name="Teams" component={TeamsScreen} />
+        <Stack.Screen name="Matches" component={MatchesScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

@@ -180,12 +180,10 @@ const styles = StyleSheet.create({
     height: 100,
     alignSelf: 'center',
     marginBottom: 20,
-    top: Platform.OS === 'android' ? StatusBar.currentHeight + 10 : 40,
     tintColor: '#084b0f',
   },
   title: {
-    fontSize: 24,
-    fontWeight: 'bold',
+    fontSize: 20,
     textAlign: 'center',
     marginTop: 20,
     marginBottom: 20,

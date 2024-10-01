@@ -81,8 +81,7 @@ const styles = StyleSheet.create({
     tintColor: '#084b0f',
   },
   title: {
-    fontSize: 24,
-    fontWeight: 'bold',
+    fontSize: 20,
     marginBottom: 20,
     marginTop: 30,
     color:'#084b0f',
