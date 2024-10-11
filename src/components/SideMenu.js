@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Text, TouchableOpacity, Animated, Dimensions, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { logout } from '../utils/logout';
 
 const { width } = Dimensions.get('window');
 
@@ -63,7 +64,7 @@ const SideMenu = ({ navigation }) => {
               <Ionicons name="football-outline" size={24} color="#084b0f" style={styles.menuIcon} />
               <Text style={styles.menuItem}>Partidas</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => navigateAndCloseMenu('Exit')} style={styles.menuItemContainer}>
+            <TouchableOpacity onPress={() => logout(navigation)} style={styles.menuItemContainer}>
               <Ionicons name="exit-outline" size={24} color="#084b0f" style={styles.menuIcon} />
               <Text style={styles.menuItem}>Sair</Text>
             </TouchableOpacity>

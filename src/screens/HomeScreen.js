@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity, Platform, StatusBar } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { retrieveUserData } from '../utils/storage';
+import { logout } from '../utils/logout';
 
 const HomeScreen = ({ navigation }) => {
   const [userName, setUserName] = useState('');
@@ -57,6 +58,13 @@ const HomeScreen = ({ navigation }) => {
             <Text style={styles.optionText}>Partidas</Text>
           </TouchableOpacity>
         </View>
+
+        <View style={styles.logoutContainer}>
+          <TouchableOpacity style={styles.logoutOption} onPress={() => logout(navigation)}>
+            <Ionicons name="exit-outline" size={30} color="#084b0f" />
+            <Text style={styles.optionText}>Sair</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );
@@ -85,7 +93,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 18,
     color: 'gray',
-    marginVertical: 10,
   },
   dashboardContainer: {
     padding: 20,
@@ -95,13 +102,13 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 20,
+    marginBottom: 10,
   },
   dashboardOption: {
     flex: 1,
     backgroundColor: '#c4ac57',
     margin: 10,
-    paddingVertical: 30, // Aumente o espaçamento vertical para dar mais espaço ao texto
+    paddingVertical: 20, // Aumente o espaçamento vertical para dar mais espaço ao texto
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 10,
@@ -111,6 +118,18 @@ const styles = StyleSheet.create({
     fontSize: 18, // Aumente o tamanho da fonte para tornar o texto mais visível
     fontWeight: 'bold', // Torna o texto mais visível com negrito
     marginTop: 10, // Adiciona espaçamento entre o ícone e o texto
+  },
+  logoutContainer: {
+    alignItems: 'center',
+    marginTop: 10, // Espaçamento acima da opção "Sair"
+  },
+  logoutOption: {
+    width: '50%', // Define um tamanho fixo menor para o botão de sair
+    backgroundColor: '#c4ac57',
+    paddingVertical: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 10,
   },
 });
 
