@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, FlatList, Image, Platform, StatusBar } from 'react-native';
-import { Ionicons } from '@expo/vector-icons'; // Para ícones como lixeira
+import { Ionicons } from '@expo/vector-icons';
 import SideMenu from '../components/SideMenu';
 
 const MatchItem = ({ match, onUpdateScore, onDelete, onStartTimer, onPauseResumeTimer, timer, isRunning, isPaused }) => {
@@ -25,7 +25,6 @@ const MatchItem = ({ match, onUpdateScore, onDelete, onStartTimer, onPauseResume
           onChangeText={(text) => onUpdateScore(match.id, 'team2Name', text)}
         />
       </View>
-      {/* Cronômetro */}
       <View style={styles.timerContainer}>
         <Text style={styles.timerText}>{timer}</Text>
         <View style={styles.timerButtons}>
@@ -47,10 +46,9 @@ const MatchItem = ({ match, onUpdateScore, onDelete, onStartTimer, onPauseResume
 const MatchesScreen = ({ navigation }) => {
   const [matches, setMatches] = useState([]);
   const [timers, setTimers] = useState({});
-  const [timerStatus, setTimerStatus] = useState({}); // Armazena se o cronômetro está rodando ou pausado
-  const [isPaused, setIsPaused] = useState({}); // Armazena o estado de pausa de cada cronômetro
+  const [timerStatus, setTimerStatus] = useState({});
+  const [isPaused, setIsPaused] = useState({});
 
-  // Função para adicionar novo jogo
   const addNewMatch = () => {
     const newMatch = {
       id: Date.now().toString(),
@@ -61,11 +59,10 @@ const MatchesScreen = ({ navigation }) => {
     };
     setMatches([...matches, newMatch]);
     setTimers((prev) => ({ ...prev, [newMatch.id]: '00:00' }));
-    setTimerStatus((prev) => ({ ...prev, [newMatch.id]: false })); // Inicia como não rodando
-    setIsPaused((prev) => ({ ...prev, [newMatch.id]: false })); // Inicia como não pausado
+    setTimerStatus((prev) => ({ ...prev, [newMatch.id]: false }));
+    setIsPaused((prev) => ({ ...prev, [newMatch.id]: false }));
   };
 
-  // Função para atualizar placar e nomes dos times
   const updateScore = (matchId, field, value) => {
     const updatedMatches = matches.map((match) => {
       if (match.id === matchId) {
@@ -78,7 +75,6 @@ const MatchesScreen = ({ navigation }) => {
     setMatches(updatedMatches);
   };
 
-  // Função para deletar uma partida
   const deleteMatch = (matchId) => {
     setMatches(matches.filter((match) => match.id !== matchId));
     const updatedTimers = { ...timers };
@@ -92,7 +88,6 @@ const MatchesScreen = ({ navigation }) => {
     setIsPaused(updatedPausedStatus);
   };
 
-  // Função para iniciar cronômetro
   const startTimer = (matchId) => {
     if (!timerStatus[matchId]) {
       const startTime = Date.now() - parseTime(timers[matchId]);
@@ -108,20 +103,24 @@ const MatchesScreen = ({ navigation }) => {
     }
   };
 
-  // Função para pausar ou continuar cronômetro
   const pauseResumeTimer = (matchId) => {
     if (isPaused[matchId]) {
-      // Continuar cronômetro
-      startTimer(matchId);
+      const startTime = Date.now() - parseTime(timers[matchId]);
+      const timerInterval = setInterval(() => {
+        const elapsed = Date.now() - startTime;
+        const minutes = Math.floor(elapsed / 60000).toString().padStart(2, '0');
+        const seconds = Math.floor((elapsed % 60000) / 1000).toString().padStart(2, '0');
+        setTimers((prev) => ({ ...prev, [matchId]: `${minutes}:${seconds}` }));
+      }, 1000);
+      setTimers((prev) => ({ ...prev, [`${matchId}_interval`]: timerInterval }));
+      setTimerStatus((prev) => ({ ...prev, [matchId]: true }));
     } else {
-      // Pausar cronômetro
       clearInterval(timers[`${matchId}_interval`]);
       setTimerStatus((prev) => ({ ...prev, [matchId]: false }));
     }
-    setIsPaused((prev) => ({ ...prev, [matchId]: !prev[matchId] })); // Alterna entre pausado e rodando
+    setIsPaused((prev) => ({ ...prev, [matchId]: !prev[matchId] }));
   };
 
-  // Função para converter string de tempo em milissegundos
   const parseTime = (time) => {
     const [minutes, seconds] = time.split(':').map(Number);
     return minutes * 60000 + seconds * 1000;

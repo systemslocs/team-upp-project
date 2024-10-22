@@ -25,6 +25,7 @@ const PlayerScreen = ({ navigation }) => {
     loadPlayers(); // Carrega os jogadores quando o componente é montado
   }, []);
 
+  // Função para inserir um jogador
   const handleInsertPlayer = async () => {
     if (!playerName || !playerScore) {
       Alert.alert('Erro', 'Preencha todos os campos.');
@@ -33,8 +34,9 @@ const PlayerScreen = ({ navigation }) => {
 
     const formattedScore = parseFloat(playerScore.replace(',', '.'));
 
-    if (isNaN(formattedScore)) {
-      Alert.alert('Erro', 'A nota inserida não é válida');
+    // Verificação para aceitar apenas notas entre 1.00 e 5.00
+    if (isNaN(formattedScore) || formattedScore < 1 || formattedScore > 5) {
+      Alert.alert('Erro', 'A nota deve estar entre 1.00 e 5.00.');
       return;
     }
 
@@ -57,6 +59,7 @@ const PlayerScreen = ({ navigation }) => {
     }
   };
 
+  // Função para remover um jogador
   const handleRemovePlayer = (playerToRemove) => {
     Alert.alert(
       "Confirmar Remoção",
@@ -108,6 +111,9 @@ const PlayerScreen = ({ navigation }) => {
         <CustomButton title="Inserir" onPress={handleInsertPlayer} />
 
         {/* Lista de jogadores */}
+        {players.length === 0 ? (
+          <Text style={styles.noPlayersText}>Nenhum jogador adicionado</Text>
+        ) : (
         <FlatList
           data={players}
           keyExtractor={(item, index) => `${item.name}-${index}`} // Usando nome e índice como chave
@@ -119,10 +125,10 @@ const PlayerScreen = ({ navigation }) => {
               </TouchableOpacity>
             </View>
           )}
-          style={styles.playersList}
+          contentContainerStyle={styles.flatListContent} // Adiciona espaçamento extra
           showsVerticalScrollIndicator={false} // Esconde a barra de rolagem vertical
-          contentContainerStyle={styles.flatListContent} // Adiciona espaçamento no final da lista
         />
+        )}
       </View>
     </View>
   );
@@ -135,8 +141,8 @@ const styles = StyleSheet.create({
     flex: 1, // Garante que o container use o espaço disponível da tela
   },
   playerImage: {
-    width: 200,  // Aproximadamente 3 a 4 cm
-    height: 200, // Aproximadamente 3 a 4 cm
+    width: 200,  
+    height: 200, 
     marginBottom: 10,
     top: Platform.OS === 'android' ? StatusBar.currentHeight + 10 : 40,
     tintColor: '#084b0f',
@@ -155,7 +161,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 10,
+    padding: 15,
     borderBottomWidth: 1,
     borderColor: '#ccc',
   },
@@ -163,13 +169,19 @@ const styles = StyleSheet.create({
     backgroundColor: 'red',
     padding: 5,
     borderRadius: 5,
+    marginLeft: 50,
   },
   removeText: {
     color: '#fff',
   },
   flatListContent: {
-    paddingBottom: 50, // Espaçamento na parte inferior da lista
-  }
+    paddingBottom: 100, // Espaçamento maior na parte inferior da lista para garantir que o último item fique visível
+  },
+  noPlayersText: {
+    fontSize: 16,
+    color: 'gray',
+    marginTop: 20,
+  },
 });
 
 export default PlayerScreen;

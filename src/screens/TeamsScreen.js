@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image, ScrollView, Platform, StatusBar } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage'; // Importando AsyncStorage
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { GlobalStyles } from '../styles/GlobalStyles';
 import SideMenu from '../components/SideMenu';
 import CustomButton from '../components/CustomButton';
@@ -10,7 +10,7 @@ const TeamsScreen = ({ navigation }) => {
   const [selectedPlayers, setSelectedPlayers] = useState([]);
   const [teams, setTeams] = useState([]);
   const [teamDifference, setTeamDifference] = useState(null);
-  const [isSorted, setIsSorted] = useState(false); // Nova variável para controlar o status do sorteio
+  const [isSorted, setIsSorted] = useState(false);
 
   // Função para buscar jogadores armazenados
   useEffect(() => {
@@ -42,38 +42,39 @@ const TeamsScreen = ({ navigation }) => {
   };
 
   // Função para gerar todas as combinações possíveis de times
-  const generateTeamsCombinations = (players, teamSize) => {
-    const result = [];
-    const numberOfTeams = Math.floor(players.length / teamSize);
-    
-    const generateCombinations = (currentTeams, remainingPlayers) => {
-      if (currentTeams.length === numberOfTeams) {
-        result.push(currentTeams);
+  const generateCombinations = (players, teamSize) => {
+    const allCombinations = [];
+    const numTeams = players.length / teamSize;
+
+    const helper = (currentTeams, remainingPlayers) => {
+      if (currentTeams.length === numTeams) {
+        allCombinations.push(currentTeams);
         return;
       }
+
       for (let i = 0; i <= remainingPlayers.length - teamSize; i++) {
         const newTeam = remainingPlayers.slice(i, i + teamSize);
-        generateCombinations([...currentTeams, newTeam], [
+        helper([...currentTeams, newTeam], [
           ...remainingPlayers.slice(0, i),
           ...remainingPlayers.slice(i + teamSize),
         ]);
       }
     };
 
-    generateCombinations([], players);
-    return result;
+    helper([], players);
+    return allCombinations;
   };
 
-  // Função para encontrar a combinação de times com a menor diferença entre as médias
-  const findBestTeamsCombination = (players, teamSize) => {
-    const combinations = generateTeamsCombinations(players, teamSize);
+  // Função para encontrar a melhor combinação de times (menor diferença entre as médias)
+  const findBestCombination = (players, teamSize) => {
+    const allCombinations = generateCombinations(players, teamSize);
     let bestCombination = null;
     let minDifference = Infinity;
 
-    combinations.forEach((combination) => {
-      const averages = combination.map((team) => calculateAverage(team));
-      const maxAverage = Math.max(...averages);
-      const minAverage = Math.min(...averages);
+    allCombinations.forEach((combination) => {
+      const teamAverages = combination.map((team) => calculateAverage(team));
+      const maxAverage = Math.max(...teamAverages);
+      const minAverage = Math.min(...teamAverages);
       const difference = maxAverage - minAverage;
 
       if (difference < minDifference) {
@@ -87,79 +88,80 @@ const TeamsScreen = ({ navigation }) => {
 
   // Função para sortear os times com a menor diferença de médias
   const handleSortTeams = () => {
-    if (selectedPlayers.length < 10 || selectedPlayers.length % 5 !== 0) {
-      alert('Selecione pelo menos 10 jogadores e a quantidade necessária para formar times de 5.');
+    const teamSize = 5;
+    const numberOfPlayers = selectedPlayers.length;
+
+    if (numberOfPlayers < teamSize || numberOfPlayers % teamSize !== 0) {
+      alert(`Selecione múltiplos de 5 jogadores para formar times.`);
       return;
     }
 
-    // Encontra a melhor combinação de times que minimiza a diferença entre as médias
-    const { teams: generatedTeams, difference } = findBestTeamsCombination(selectedPlayers, 5);
+    const { teams: sortedTeams, difference } = findBestCombination(selectedPlayers, teamSize);
 
-    // Atualiza o estado dos times e da diferença
-    setTeams(generatedTeams);
+    setTeams(sortedTeams);
     setTeamDifference(difference);
-    setIsSorted(true); // Marca o sorteio como concluído
+    setIsSorted(true);
   };
 
   // Função para resetar a página para o estado inicial
   const handleNewSort = () => {
-    setSelectedPlayers([]);  // Reseta a seleção de jogadores
-    setTeams([]);            // Reseta os times
-    setTeamDifference(null);  // Reseta a diferença das médias
-    setIsSorted(false);       // Volta ao estado inicial
+    setSelectedPlayers([]);
+    setTeams([]);
+    setTeamDifference(null);
+    setIsSorted(false);
   };
 
   return (
     <View style={GlobalStyles.container}>
       <SideMenu navigation={navigation} />
       <ScrollView style={styles.scrollContainer}>
-      <View style={styles.content}>
-        <Image source={require('../../assets/team-icon.png')} style={styles.image} />
-        <Text style={styles.title}>Selecione os jogadores</Text>
+        <View style={styles.content}>
+          <Image source={require('../../assets/team-icon.png')} style={styles.image} />
+          <Text style={styles.title}>Selecione os jogadores</Text>
 
-        {players.length === 0 ? (
-          <Text style={styles.noPlayersText}>Nenhum jogador adicionado</Text>
-        ) : (
-          <FlatList
-            data={players}
-            keyExtractor={(item, index) => index.toString()}
-            renderItem={({ item }) => (
-              <TouchableOpacity
-                style={[
-                  styles.playerItem,
-                  selectedPlayers.includes(item) && styles.selectedPlayer,
-                ]}
-                onPress={() => togglePlayerSelection(item)}
-              >
-                <Text>{item.name} - Nota: {parseFloat(item.score).toFixed(2)}</Text>
-              </TouchableOpacity>
-            )}
-            scrollEnabled={false} // Desabilita o scroll do FlatList para evitar conflito com o ScrollView
-          />
-        )}
-        <View style={styles.buttonContainer}>
-          <CustomButton
-            title={isSorted ? "Novo Sorteio" : "Sortear Times"} // Muda o título do botão
-            onPress={isSorted ? handleNewSort : handleSortTeams} // Alterna entre o sorteio e o reset
-            disabled={!isSorted && (selectedPlayers.length < 10 || selectedPlayers.length % 5 !== 0)} // Desabilita o botão se não houver sorteio e seleção inválida
-          />
-        </View>
-        {teams.length > 0 && (
-          <View style={styles.teamsContainer}>
-            {teams.map((team, index) => (
-              <View key={index} style={styles.team}>
-                <Text style={styles.teamTitle}>Time {index + 1} - Média: {calculateAverage(team).toFixed(2)}</Text>
-                {team.map((player, idx) => (
-                  <Text key={idx} style={styles.playerText}>{player.name} - Nota: {parseFloat(player.score).toFixed(2)}</Text>
-                ))}
-              </View>
-            ))}
-            {teamDifference !== null && (
-              <Text style={styles.differenceText}>Maior diferença entre as médias: {teamDifference.toFixed(3)}</Text>
-            )}
+          {players.length === 0 ? (
+            <Text style={styles.noPlayersText}>Nenhum jogador adicionado</Text>
+          ) : (
+            <FlatList
+              data={players}
+              keyExtractor={(item, index) => index.toString()}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={[
+                    styles.playerItem,
+                    selectedPlayers.includes(item) && styles.selectedPlayer,
+                  ]}
+                  onPress={() => togglePlayerSelection(item)}
+                >
+                  <Text>{item.name} - Nota: {parseFloat(item.score).toFixed(2)}</Text>
+                </TouchableOpacity>
+              )}
+              scrollEnabled={false}
+            />
+          )}
+          <View style={styles.buttonContainer}>
+            <CustomButton
+              title={isSorted ? "Novo Sorteio" : "Sortear Times"}
+              onPress={isSorted ? handleNewSort : handleSortTeams}
+              disabled={!isSorted && (selectedPlayers.length < 5 || selectedPlayers.length % 5 !== 0)}
+            />
           </View>
-        )}
-      </View>
+          {teams.length > 0 && (
+            <View style={styles.teamsContainer}>
+              {teams.map((team, index) => (
+                <View key={index} style={styles.team}>
+                  <Text style={styles.teamTitle}>Time {index + 1} - Média: {calculateAverage(team).toFixed(2)}</Text>
+                  {team.map((player, idx) => (
+                    <Text key={idx} style={styles.playerText}>{player.name} - Nota: {parseFloat(player.score).toFixed(2)}</Text>
+                  ))}
+                </View>
+              ))}
+              {teamDifference !== null && (
+                <Text style={styles.differenceText}>Maior diferença entre as médias: {teamDifference.toFixed(3)}</Text>
+              )}
+            </View>
+          )}
+        </View>
       </ScrollView>
     </View>
   );
